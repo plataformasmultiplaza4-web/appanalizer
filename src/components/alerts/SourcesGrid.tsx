@@ -15,7 +15,9 @@ const SOURCES: SourceConnection[] = [
     id: 'meta',
     name: 'Meta Ads',
     platform: 'meta',
-    status: 'coming_soon',
+    status: 'connected',
+    accountCount: 6,
+    lastSync: 'Hace 5 min',
   },
   {
     id: 'google',

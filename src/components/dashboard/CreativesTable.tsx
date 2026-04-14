@@ -160,10 +160,19 @@ export function CreativesTable({ creatives, isLoading = false }: CreativesTableP
           gap: 8,
         }}
       >
+        {/* TikTok icon */}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
           <rect width="24" height="24" rx="4" fill="#000000" />
           <path
             d="M16.6 5.82C15.9 5.07 15.5 4.08 15.5 3H12.45V15.4C12.37 16.71 11.29 17.75 9.97 17.75C8.62 17.75 7.52 16.65 7.52 15.29C7.52 13.67 9.07 12.43 10.68 12.91V9.79C7.34 9.28 4.47 11.87 4.47 15.29C4.47 18.63 7.19 21.3 10.5 21.3C13.84 21.3 16.53 18.6 16.53 15.25V9.02C17.79 9.93 19.32 10.47 21 10.47V7.42C20.06 7.42 17.86 6.85 16.6 5.82Z"
+            fill="white"
+          />
+        </svg>
+        {/* Meta icon */}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="4" fill="#1877F2" />
+          <path
+            d="M13.5 12.5H15.5L16 9.5H13.5V8C13.5 7.17 13.5 6.5 15 6.5H16V4C15.74 3.97 14.97 3.9 14.14 3.9C11.89 3.9 10.5 5.19 10.5 7.7V9.5H8V12.5H10.5V20H13.5V12.5Z"
             fill="white"
           />
         </svg>
