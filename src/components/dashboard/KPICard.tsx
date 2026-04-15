@@ -1,67 +1,61 @@
 'use client'
 
-import { MoreHorizontal, TrendingUp, TrendingDown } from 'lucide-react'
+import { Info, ArrowUp, ArrowDown } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 interface KPICardProps {
   label: string
   value: string
   sublabel?: string
-  delta?: number            // percentage change
-  platform?: 'meta' | 'tiktok' | 'all'
-  isSelected?: boolean
+  delta?: number
+  platform?: 'meta' | 'tiktok' | 'google' | 'all'
   isLoading?: boolean
   valueColor?: 'brand' | 'default' | 'success' | 'warning' | 'danger'
+  isSelected?: boolean
   onClick?: () => void
 }
 
-function PlatformIcon({ platform }: { platform?: string }) {
-  if (platform === 'meta') {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="4" fill="#1877F2" />
-        <path
-          d="M13.5 12.5H15.5L16 9.5H13.5V8C13.5 7.17 13.5 6.5 15 6.5H16V4C15.74 3.97 14.97 3.9 14.14 3.9C11.89 3.9 10.5 5.19 10.5 7.7V9.5H8V12.5H10.5V20H13.5V12.5Z"
-          fill="white"
-        />
-      </svg>
-    )
+function PlatformDot({ platform }: { platform?: string }) {
+  const colors: Record<string, string> = {
+    meta: '#1877F2',
+    google: '#4285F4',
+    tiktok: '#010101',
+    all: 'var(--brand)',
   }
-  if (platform === 'tiktok') {
-    return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="4" fill="#000000" />
-        <path
-          d="M16.6 5.82C15.9 5.07 15.5 4.08 15.5 3H12.45V15.4C12.37 16.71 11.29 17.75 9.97 17.75C8.62 17.75 7.52 16.65 7.52 15.29C7.52 13.67 9.07 12.43 10.68 12.91V9.79C7.34 9.28 4.47 11.87 4.47 15.29C4.47 18.63 7.19 21.3 10.5 21.3C13.84 21.3 16.53 18.6 16.53 15.25V9.02C17.79 9.93 19.32 10.47 21 10.47V7.42C20.06 7.42 17.86 6.85 16.6 5.82Z"
-          fill="white"
-        />
-      </svg>
-    )
-  }
-  // All / default
+  const bg = colors[platform ?? 'all'] ?? 'var(--brand)'
+
   return (
     <div
       style={{
-        width: 16,
-        height: 16,
-        borderRadius: 4,
-        background: 'var(--brand)',
+        width: 22,
+        height: 22,
+        borderRadius: '50%',
+        background: bg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexShrink: 0,
+        opacity: 0.85,
       }}
     >
-      <span style={{ color: 'white', fontSize: 8, fontWeight: 700 }}>Σ</span>
+      {platform === 'meta' && (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+          <path d="M13.5 12.5H15.5L16 9.5H13.5V8C13.5 7.17 13.5 6.5 15 6.5H16V4C15.74 3.97 14.97 3.9 14.14 3.9C11.89 3.9 10.5 5.19 10.5 7.7V9.5H8V12.5H10.5V20H13.5V12.5Z" fill="white" />
+        </svg>
+      )}
+      {platform === 'tiktok' && (
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+          <path d="M16.6 5.82C15.9 5.07 15.5 4.08 15.5 3H12.45V15.4C12.37 16.71 11.29 17.75 9.97 17.75C8.62 17.75 7.52 16.65 7.52 15.29C7.52 13.67 9.07 12.43 10.68 12.91V9.79C7.34 9.28 4.47 11.87 4.47 15.29C4.47 18.63 7.19 21.3 10.5 21.3C13.84 21.3 16.53 18.6 16.53 15.25V9.02C17.79 9.93 19.32 10.47 21 10.47V7.42C20.06 7.42 17.86 6.85 16.6 5.82Z" fill="white" />
+        </svg>
+      )}
+      {platform === 'google' && (
+        <span style={{ color: 'white', fontSize: 8, fontWeight: 800 }}>G</span>
+      )}
+      {(platform === 'all' || !platform) && (
+        <span style={{ color: 'white', fontSize: 8, fontWeight: 800 }}>Σ</span>
+      )}
     </div>
   )
-}
-
-const VALUE_COLORS: Record<string, string> = {
-  brand: 'var(--brand)',
-  default: 'var(--text-1)',
-  success: 'var(--success)',
-  warning: 'var(--warning)',
-  danger: 'var(--danger)',
 }
 
 export function KPICard({
@@ -70,9 +64,8 @@ export function KPICard({
   sublabel,
   delta,
   platform = 'all',
-  isSelected = false,
   isLoading = false,
-  valueColor = 'default',
+  isSelected = false,
   onClick,
 }: KPICardProps) {
   const isPositive = delta !== undefined && delta >= 0
@@ -86,14 +79,19 @@ export function KPICard({
           border: '1px solid var(--border)',
           borderRadius: 10,
           padding: '12px 14px',
+          minWidth: 150,
           display: 'flex',
           flexDirection: 'column',
-          gap: 8,
+          gap: 7,
         }}
       >
-        <Skeleton height={12} width="60%" />
-        <Skeleton height={26} width="70%" />
-        <Skeleton height={10} width="40%" />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Skeleton height={22} width={22} borderRadius={11} />
+          <Skeleton height={10} width={10} borderRadius={5} />
+        </div>
+        <Skeleton height={11} width="65%" />
+        <Skeleton height={24} width="55%" />
+        <Skeleton height={10} width="45%" />
       </div>
     )
   }
@@ -107,75 +105,69 @@ export function KPICard({
         borderRadius: 10,
         padding: '12px 14px',
         cursor: onClick ? 'pointer' : 'default',
-        boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.08)' : 'none',
+        boxShadow: isSelected ? '0 0 0 3px rgba(0,190,200,0.10)' : 'none',
         transition: 'border-color 0.15s, box-shadow 0.15s',
-        position: 'relative',
+        minWidth: 150,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 5,
       }}
       onMouseEnter={(e) => {
         if (!isSelected && onClick) {
-          e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)'
+          e.currentTarget.style.borderColor = 'var(--brand-mid)'
+          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,190,200,0.08)'
         }
       }}
       onMouseLeave={(e) => {
         if (!isSelected) {
           e.currentTarget.style.borderColor = 'var(--border)'
+          e.currentTarget.style.boxShadow = 'none'
         }
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 8,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <PlatformIcon platform={platform} />
-          <span
-            style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 500, lineHeight: 1 }}
-          >
-            {label}
-          </span>
-        </div>
+      {/* Top row: platform icon + info */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <PlatformDot platform={platform} />
         <button
           style={{
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            padding: '2px 4px',
-            borderRadius: 4,
             color: 'var(--text-3)',
             display: 'flex',
-            alignItems: 'center',
+            padding: 0,
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <MoreHorizontal size={14} />
+          <Info size={13} strokeWidth={1.5} />
         </button>
       </div>
+
+      {/* Metric name */}
+      <span
+        style={{
+          fontSize: 11,
+          color: 'var(--text-2)',
+          fontWeight: 500,
+          lineHeight: 1,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {label}
+      </span>
 
       {/* Value */}
       <div
         className="kpi-value"
-        style={{ color: VALUE_COLORS[valueColor] ?? VALUE_COLORS.default }}
+        style={{ fontSize: 20 }}
       >
         {value}
       </div>
 
-      {/* Sub-label + delta */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginTop: 6,
-        }}
-      >
-        {sublabel && (
-          <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{sublabel}</span>
-        )}
+      {/* Delta + sublabel */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
         {hasDelta && (
           <div
             style={{
@@ -188,13 +180,25 @@ export function KPICard({
             }}
           >
             {isPositive ? (
-              <TrendingUp size={11} />
+              <ArrowUp size={11} strokeWidth={2.5} />
             ) : (
-              <TrendingDown size={11} />
+              <ArrowDown size={11} strokeWidth={2.5} />
             )}
-            {isPositive ? '+' : ''}
-            {delta.toFixed(1)}%
+            {Math.abs(delta).toFixed(1)}%
           </div>
+        )}
+        {sublabel && (
+          <span
+            style={{
+              fontSize: 10,
+              color: 'var(--text-3)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {sublabel}
+          </span>
         )}
       </div>
     </div>
