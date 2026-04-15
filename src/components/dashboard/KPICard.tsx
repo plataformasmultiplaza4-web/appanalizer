@@ -107,13 +107,13 @@ export function KPICard({
         borderRadius: 10,
         padding: '12px 14px',
         cursor: onClick ? 'pointer' : 'default',
-        boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.08)' : 'none',
+        boxShadow: isSelected ? '0 0 0 3px rgba(0,188,212,0.10)' : 'none',
         transition: 'border-color 0.15s, box-shadow 0.15s',
         position: 'relative',
       }}
       onMouseEnter={(e) => {
         if (!isSelected && onClick) {
-          e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)'
+          e.currentTarget.style.borderColor = 'rgba(0,188,212,0.40)'
         }
       }}
       onMouseLeave={(e) => {

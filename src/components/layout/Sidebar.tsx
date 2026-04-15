@@ -35,33 +35,45 @@ function NavItem({
       href={href}
       title={label}
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: 8,
+        width: 32,
+        height: 32,
+        borderRadius: 7,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: isActive ? 'rgba(99,102,241,0.20)' : 'transparent',
+        background: isActive ? 'var(--sidebar-icon-active-bg)' : 'transparent',
         textDecoration: 'none',
         flexShrink: 0,
         transition: 'background 0.15s ease',
+        position: 'relative',
       }}
       onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
-        }
+        if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.04)'
       }}
       onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.background = 'transparent'
-        }
+        if (!isActive) e.currentTarget.style.background = 'transparent'
       }}
     >
       <Icon
-        size={18}
-        strokeWidth={1.5}
-        color={isActive ? '#818CF8' : 'rgba(255,255,255,0.45)'}
+        size={16}
+        strokeWidth={1.8}
+        color={isActive ? 'var(--sidebar-icon-active)' : 'var(--sidebar-icon)'}
       />
+      {/* Active indicator — left border */}
+      {isActive && (
+        <span
+          style={{
+            position: 'absolute',
+            left: -6,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 3,
+            height: 18,
+            borderRadius: '0 3px 3px 0',
+            background: 'var(--brand)',
+          }}
+        />
+      )}
     </Link>
   )
 }
@@ -81,35 +93,28 @@ export function Sidebar() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        paddingTop: 12,
+        paddingTop: 10,
         paddingBottom: 12,
         zIndex: 50,
-        borderRight: '1px solid rgba(255,255,255,0.04)',
+        borderRight: '1px solid var(--sidebar-border)',
       }}
     >
-      {/* Logo */}
+      {/* Logo — teal square icon */}
       <div
         style={{
-          width: 30,
-          height: 30,
+          width: 28,
+          height: 28,
           background: 'var(--brand)',
           borderRadius: 7,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: 18,
+          marginBottom: 16,
           flexShrink: 0,
-          boxShadow: '0 2px 8px rgba(99,102,241,0.4)',
+          boxShadow: '0 2px 8px rgba(0,188,212,0.30)',
         }}
       >
-        <span
-          style={{
-            color: 'white',
-            fontWeight: 800,
-            fontSize: 15,
-            letterSpacing: '-0.5px',
-          }}
-        >
+        <span style={{ color: 'white', fontWeight: 800, fontSize: 13, letterSpacing: '-0.5px' }}>
           E
         </span>
       </div>
@@ -120,7 +125,7 @@ export function Sidebar() {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 3,
+          gap: 2,
           alignItems: 'center',
         }}
       >
@@ -130,7 +135,10 @@ export function Sidebar() {
             href={href}
             icon={icon}
             label={label}
-            isActive={pathname === href || (href !== '/dashboard' && pathname.startsWith(href))}
+            isActive={
+              pathname === href ||
+              (href !== '/dashboard' && pathname.startsWith(href))
+            }
           />
         ))}
       </nav>
@@ -138,9 +146,9 @@ export function Sidebar() {
       {/* Divider */}
       <div
         style={{
-          width: 26,
+          width: 22,
           height: 1,
-          background: 'rgba(255,255,255,0.08)',
+          background: 'var(--border)',
           margin: '8px 0',
         }}
       />
@@ -150,50 +158,39 @@ export function Sidebar() {
         href="/settings"
         title="Configuración"
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 8,
+          width: 32,
+          height: 32,
+          borderRadius: 7,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           background: 'transparent',
-          marginBottom: 8,
+          marginBottom: 6,
           textDecoration: 'none',
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'transparent'
-        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
       >
-        <Settings size={17} strokeWidth={1.5} color="rgba(255,255,255,0.4)" />
+        <Settings size={15} strokeWidth={1.8} color="var(--sidebar-icon)" />
       </Link>
 
       {/* Avatar */}
       <div
         title="Luis Garabito"
         style={{
-          width: 30,
-          height: 30,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
+          background: 'linear-gradient(135deg, #00BCD4 0%, #26C6DA 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
           cursor: 'pointer',
-          border: '2px solid rgba(99,102,241,0.3)',
+          border: '2px solid rgba(0,188,212,0.25)',
         }}
       >
-        <span
-          style={{
-            color: 'white',
-            fontWeight: 700,
-            fontSize: 10,
-            letterSpacing: '0.3px',
-          }}
-        >
+        <span style={{ color: 'white', fontWeight: 700, fontSize: 9, letterSpacing: '0.3px' }}>
           LG
         </span>
       </div>

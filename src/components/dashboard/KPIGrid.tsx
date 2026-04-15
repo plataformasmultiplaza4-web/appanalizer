@@ -16,6 +16,7 @@ interface KPIGridProps {
   isLoading?: boolean
   selectedKPI?: string
   onSelectKPI?: (id: string) => void
+  platform?: 'all' | 'meta' | 'tiktok'
 }
 
 export function KPIGrid({
@@ -23,33 +24,36 @@ export function KPIGrid({
   isLoading = false,
   selectedKPI,
   onSelectKPI,
+  platform = 'all',
 }: KPIGridProps) {
+  const pl = platform === 'meta' ? 'meta' : platform === 'tiktok' ? 'tiktok' : 'all'
+
   const cards = [
     {
       id: 'gasto',
-      label: 'Gasto Total',
+      label: platform === 'meta' ? 'Meta Spend' : platform === 'tiktok' ? 'TikTok Spend' : 'Gasto Total',
       value: isLoading || !kpis ? '—' : formatCurrencyShort(kpis.totalGasto),
       sublabel: isLoading || !kpis ? '' : formatCurrency(kpis.totalGasto),
       delta: kpis?.gastoDelta,
-      platform: 'tiktok' as const,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor: 'brand' as const,
     },
     {
       id: 'ventas',
-      label: 'Ventas Totales',
+      label: platform === 'meta' ? 'Meta Conversiones' : platform === 'tiktok' ? 'TikTok Ventas' : 'Ventas Totales',
       value: isLoading || !kpis ? '—' : formatNumber(kpis.totalVentas),
       sublabel: 'pedidos confirmados',
       delta: kpis?.ventasDelta,
-      platform: 'tiktok' as const,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor: 'default' as const,
     },
     {
       id: 'cpa',
-      label: 'CPA Promedio',
+      label: platform === 'meta' ? 'Meta CPA' : platform === 'tiktok' ? 'TikTok CPA' : 'CPA Promedio',
       value: isLoading || !kpis ? '—' : formatCurrency(kpis.cpaPromedio),
       sublabel: 'costo por venta',
-      delta: kpis?.cpaDelta !== undefined ? -(kpis.cpaDelta) : undefined, // invert — lower CPA = better
-      platform: 'all' as const,
+      delta: kpis?.cpaDelta !== undefined ? -(kpis.cpaDelta) : undefined,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor:
         kpis && kpis.cpaPromedio <= 35
           ? ('success' as const)
@@ -59,11 +63,11 @@ export function KPIGrid({
     },
     {
       id: 'roas',
-      label: 'ROAS Promedio',
+      label: platform === 'meta' ? 'Meta ROAS' : platform === 'tiktok' ? 'TikTok ROAS' : 'ROAS Promedio',
       value: isLoading || !kpis ? '—' : formatRoas(kpis.roasPromedio),
       sublabel: 'retorno en inversión',
       delta: kpis?.roasDelta,
-      platform: 'all' as const,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor:
         kpis && kpis.roasPromedio >= 2.5
           ? ('success' as const)
@@ -73,18 +77,18 @@ export function KPIGrid({
     },
     {
       id: 'ctr',
-      label: 'CTR Promedio',
+      label: platform === 'meta' ? 'Meta CTR' : platform === 'tiktok' ? 'TikTok CTR' : 'CTR Promedio',
       value: isLoading || !kpis ? '—' : formatPercent(kpis.ctrPromedio),
       sublabel: 'click-through rate',
-      platform: 'tiktok' as const,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor: 'default' as const,
     },
     {
       id: 'frecuencia',
-      label: 'Frecuencia',
+      label: 'Frecuencia Prom.',
       value: isLoading || !kpis ? '—' : formatFrequency(kpis.frecuenciaPromedio),
       sublabel: 'promedio por usuario',
-      platform: 'tiktok' as const,
+      platform: pl as 'meta' | 'tiktok' | 'all',
       valueColor:
         kpis && kpis.frecuenciaPromedio >= 2.5
           ? ('danger' as const)

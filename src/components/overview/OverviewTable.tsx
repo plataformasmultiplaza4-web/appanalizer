@@ -87,10 +87,10 @@ export function OverviewTable({ accounts, isLoading = false }: OverviewTableProp
         }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <rect width="9" height="9" x="2" y="2" rx="2" fill="#6366F1" />
-          <rect width="9" height="9" x="13" y="2" rx="2" fill="#818CF8" />
-          <rect width="9" height="9" x="2" y="13" rx="2" fill="#818CF8" />
-          <rect width="9" height="9" x="13" y="13" rx="2" fill="#6366F1" />
+          <rect width="9" height="9" x="2" y="2" rx="2" fill="#00BCD4" />
+          <rect width="9" height="9" x="13" y="2" rx="2" fill="#4DD0E1" />
+          <rect width="9" height="9" x="2" y="13" rx="2" fill="#4DD0E1" />
+          <rect width="9" height="9" x="13" y="13" rx="2" fill="#00BCD4" />
         </svg>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>
           Resumen por Cuenta

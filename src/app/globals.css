@@ -3,19 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --brand: #6366F1;
-  --brand-light: #EEF2FF;
-  --brand-mid: #818CF8;
-  --sidebar-bg: #1A1B2E;
+  /* ── Brand — teal/cyan (mastermetrics palette) ─────────────────────── */
+  --brand: #00BCD4;
+  --brand-dark: #0097A7;
+  --brand-light: #E0F7FA;
+  --brand-mid: #4DD0E1;
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: #E5E7EB;
+  --sidebar-icon: #9CA3AF;
+  --sidebar-icon-active: #00BCD4;
+  --sidebar-icon-active-bg: rgba(0,188,212,0.10);
   --surface: #FFFFFF;
-  --bg-page: #F4F5F7;
-  --border: #EAECF0;
+  --bg-page: #F8F9FC;
+
+  /* ── Borders & text ─────────────────────────────────────────────────── */
+  --border: #E5E7EB;
   --border-light: #F3F4F6;
   --text-1: #111827;
   --text-2: #6B7280;
   --text-3: #9CA3AF;
+
+  /* ── Platform colours ───────────────────────────────────────────────── */
   --meta: #1877F2;
   --tiktok: #ff0050;
+
+  /* ── Semantic ───────────────────────────────────────────────────────── */
   --success: #10B981;
   --success-bg: #D1FAE5;
   --success-text: #065F46;
@@ -25,8 +39,10 @@
   --danger: #EF4444;
   --danger-bg: #FEE2E2;
   --danger-text: #991B1B;
-  --sidebar-w: 52px;
-  --topbar-h: 48px;
+
+  /* ── Dimensions ─────────────────────────────────────────────────────── */
+  --sidebar-w: 44px;
+  --topbar-h: 52px;
 }
 
 * {
