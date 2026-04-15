@@ -1,5 +1,5 @@
 /**
- * Demo data based on real Ecom Build Academy products.
+ * Demo data based on real EcomBuild Analizer Metrics products.
  * Used when NEXT_PUBLIC_DEMO_MODE=true or Windsor license is expired.
  */
 import type { Creative, AccountMetrics, KPIData, DayData, TransformedData } from '@/types/metrics'

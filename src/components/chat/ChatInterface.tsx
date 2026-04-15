@@ -22,7 +22,7 @@ export function ChatInterface({ contextData }: ChatInterfaceProps) {
     {
       role: 'assistant',
       content:
-        '¡Hola! Soy tu asistente de EcomBuild Analytics. Analizo tus datos de TikTok Ads aplicando la metodología CT 1.0. ¿En qué te puedo ayudar hoy?',
+        '¡Hola! Soy tu asistente de EcomBuild Analizer Metrics. Analizo tus datos de TikTok Ads aplicando la metodología CT 1.0. ¿En qué te puedo ayudar hoy?',
       timestamp: new Date(),
     },
   ])

@@ -7,26 +7,26 @@ import { CreativesTable } from '@/components/dashboard/CreativesTable'
 import { DayBarChart } from '@/components/dashboard/DayBarChart'
 import { AdsPanel } from '@/components/dashboard/AdsPanel'
 import { AISummary } from '@/components/dashboard/AISummary'
-import { SourcesGrid } from '@/components/alerts/SourcesGrid'
 import { useMetrics } from '@/hooks/useMetrics'
 import { useAISummary } from '@/hooks/useAISummary'
 import type { DateRange } from '@/types/dashboard'
 
 const DEMO_BANNER_STYLE: React.CSSProperties = {
-  padding: '6px 16px',
-  background: 'linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%)',
-  borderBottom: '1px solid #C7D2FE',
+  padding: '6px 20px',
+  background: 'linear-gradient(90deg, var(--brand-light) 0%, #d0f4f6 100%)',
+  borderBottom: '1px solid rgba(0,190,200,0.2)',
   fontSize: 11,
-  color: '#4338CA',
+  color: 'var(--brand-dark)',
   display: 'flex',
   alignItems: 'center',
   gap: 6,
   flexShrink: 0,
+  fontWeight: 500,
 }
 
 export default function DashboardPage() {
-  const [dateRange, setDateRange] = useState<DateRange>('7d')
-  const [activeTab, setActiveTab] = useState('dash1')
+  const [dateRange, setDateRange] = useState<DateRange>('30d')
+  const [activeSource, setActiveSource] = useState('meta')
 
   const { metrics, isLoading, isDemo, isExpired } = useMetrics(dateRange)
   const { summary, isLoading: isAnalyzing, generatedAt, analyze } = useAISummary()
@@ -39,11 +39,11 @@ export default function DashboardPage() {
   return (
     <>
       <Topbar
-        title="Dashboard Principal"
+        title="Demo Lead Generation"
         dateRange={dateRange}
         onDateChange={setDateRange}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+        activeTab={activeSource}
+        onTabChange={setActiveSource}
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
       />
@@ -53,7 +53,7 @@ export default function DashboardPage() {
         <div style={DEMO_BANNER_STYLE}>
           <span>📊</span>
           {isExpired
-            ? 'Licencia Windsor expirada — mostrando datos demo. Renueva en windsor.ai/pricing y agrega WINDSOR_API_KEY al .env.local'
+            ? 'Licencia Windsor expirada — mostrando datos demo. Configura WINDSOR_API_KEY en .env.local para datos reales.'
             : 'Modo demo activo — datos de ejemplo. Configura WINDSOR_API_KEY en .env.local para datos reales.'}
         </div>
       )}
@@ -69,9 +69,15 @@ export default function DashboardPage() {
           gap: 14,
         }}
       >
-        {/* KPI Grid */}
+        {/* KPI strip */}
         <KPIGrid
           kpis={metrics?.kpis ?? null}
+          isLoading={isLoading}
+        />
+
+        {/* Conversions chart */}
+        <DayBarChart
+          data={metrics?.dailyData ?? []}
           isLoading={isLoading}
         />
 
@@ -79,40 +85,28 @@ export default function DashboardPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 300px',
+            gridTemplateColumns: '1fr 290px',
             gap: 14,
             alignItems: 'start',
           }}
         >
-          {/* Left: Creatives Table */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <CreativesTable
-              creatives={metrics?.creatives ?? []}
-              isLoading={isLoading}
-            />
-            <DayBarChart
-              data={metrics?.dailyData ?? []}
-              isLoading={isLoading}
-            />
-          </div>
-
-          {/* Right: Ads Panel */}
+          <CreativesTable
+            creatives={metrics?.creatives ?? []}
+            isLoading={isLoading}
+          />
           <AdsPanel
             creatives={metrics?.creatives ?? []}
             isLoading={isLoading}
           />
         </div>
 
-        {/* AI Summary — full width */}
+        {/* AI Summary */}
         <AISummary
           summary={summary}
           isLoading={isAnalyzing}
           onRegenerate={handleAnalyze}
           generatedAt={generatedAt ?? undefined}
         />
-
-        {/* Sources grid */}
-        <SourcesGrid />
       </main>
     </>
   )
