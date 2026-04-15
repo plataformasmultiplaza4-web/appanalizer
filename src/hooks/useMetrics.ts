@@ -152,6 +152,7 @@ export function useMetrics(dateRange: DateRange = '7d') {
   const metricsData: TransformedData = data?.data ?? MOCK_TRANSFORMED_DATA
   const isDemo = data?.source === 'demo' && !isLoading
   const isExpired = data?.error?.includes('expired') || data?.error?.includes('license')
+  const debugError = data?.error ?? (error ? String(error) : null)
 
   return {
     metrics: metricsData,
@@ -159,6 +160,7 @@ export function useMetrics(dateRange: DateRange = '7d') {
     isDemo,
     isExpired: !!isExpired,
     error: error ?? null,
+    debugError,
     refetch: async () => {},
   }
 }

@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - claude/build-ecom-analytics-saas-Ioldt
 
 jobs:
   build-and-deploy:
@@ -13,8 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: claude/clone-landing-meta-ads-8OmrP   # rama actual
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -28,7 +27,8 @@ jobs:
       - name: Build static export
         run: npm run build
         env:
-          NEXT_PUBLIC_DEMO_MODE: 'true'
+          NEXT_PUBLIC_WINDSOR_API_KEY: ${{ secrets.WINDSOR_API_KEY }}
+          NEXT_PUBLIC_DEMO_MODE: 'false'
 
       - name: Deploy to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -37,5 +37,5 @@ jobs:
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
           local-dir: ./out/
-          server-dir: /domains/peachpuff-giraffe-177993.hostingersite.com/public_html/
+          server-dir: /domains/dimgrey-narwhal-803722.hostingersite.com/public_html/
           dangerous-clean-slate: true
