@@ -51,10 +51,10 @@ export default function DashboardPage() {
       {/* Demo / expired banner */}
       {isDemo && (
         <div style={DEMO_BANNER_STYLE}>
-          <span>📊</span>
+          <span>⚠️</span>
           {isExpired
-            ? 'Licencia Windsor expirada — mostrando datos demo. Configura WINDSOR_API_KEY en .env.local para datos reales.'
-            : 'Modo demo activo — datos de ejemplo. Configura WINDSOR_API_KEY en .env.local para datos reales.'}
+            ? 'Licencia Windsor expirada — contacta a soporte en windsor.ai'
+            : 'Windsor no conectado — mostrando datos demo. Verifica la WINDSOR_API_KEY en las variables de entorno.'}
         </div>
       )}
 

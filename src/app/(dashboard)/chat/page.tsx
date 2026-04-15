@@ -9,7 +9,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <Topbar title="Chat con IA" />
+      <Topbar />
       <main
         style={{
           flex: 1,

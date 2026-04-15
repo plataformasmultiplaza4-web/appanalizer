@@ -13,7 +13,6 @@ export default function OverviewPage() {
   return (
     <>
       <Topbar
-        title="Overview — Todas las Cuentas"
         dateRange={dateRange}
         onDateChange={setDateRange}
       />

@@ -22,7 +22,6 @@ export default function AlertsPage() {
   return (
     <>
       <Topbar
-        title="Alertas y Saturación"
         dateRange={dateRange}
         onDateChange={setDateRange}
       />

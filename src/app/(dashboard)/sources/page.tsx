@@ -6,7 +6,7 @@ import { SourcesGrid } from '@/components/alerts/SourcesGrid'
 export default function SourcesPage() {
   return (
     <>
-      <Topbar title="Fuentes de Datos" />
+      <Topbar />
       <main
         style={{
           flex: 1,

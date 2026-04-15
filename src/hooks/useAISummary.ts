@@ -28,6 +28,15 @@ export function useAISummary(): AISummaryResult {
       setIsLoading(true)
       setError(null)
 
+      // In demo mode (static build) — return mock analysis instantly, no API call
+      if (isDemoMode) {
+        await new Promise((r) => setTimeout(r, 900)) // brief loading feel
+        setSummary(MOCK_AI_SUMMARY)
+        setGeneratedAt(new Date())
+        setIsLoading(false)
+        return
+      }
+
       try {
         const { from, to } = getDateRange(dateRange)
 
@@ -35,29 +44,22 @@ export function useAISummary(): AISummaryResult {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            metricsData: creatives.slice(0, 20), // top 20 creatives
+            metricsData: creatives.slice(0, 20),
             dateRange: { from, to },
-            demo: isDemoMode,
           }),
         })
 
         const data = await res.json()
 
         if (data.error) {
-          // Fallback to mock if Claude not configured
-          if (data.error.includes('ANTHROPIC_API_KEY')) {
-            setSummary(MOCK_AI_SUMMARY)
-            setGeneratedAt(new Date())
-            return
-          }
-          throw new Error(data.error)
+          setSummary(MOCK_AI_SUMMARY)
+          setGeneratedAt(new Date())
+          return
         }
 
         setSummary(data.summary)
         setGeneratedAt(new Date())
-      } catch (err) {
-        setError(String(err))
-        // Fallback to demo on error
+      } catch {
         setSummary(MOCK_AI_SUMMARY)
         setGeneratedAt(new Date())
       } finally {

@@ -8,7 +8,12 @@ import {
   getProductColor,
   computeDelta,
 } from './utils'
-import { TIKTOK_AD_ACCOUNTS, WINDSOR_TIKTOK_FIELDS } from './constants'
+import {
+  TIKTOK_AD_ACCOUNTS,
+  WINDSOR_TIKTOK_FIELDS,
+  META_AD_ACCOUNTS,
+  WINDSOR_META_FIELDS,
+} from './constants'
 
 const WINDSOR_BASE = 'https://api.windsor.ai/data'
 
@@ -93,6 +98,37 @@ export async function fetchAllTikTokAccounts(
     accountId: account.id,
     accountName: account.name,
     platform: 'tiktok' as const,
+    data: byAccount[account.id] ?? [],
+    error: error ?? null,
+  }))
+}
+
+export async function fetchAllMetaAccounts(
+  dateFrom: string,
+  dateTo: string,
+): Promise<WindsorAccountData[]> {
+  const accounts = Object.values(META_AD_ACCOUNTS)
+
+  const { data, error } = await fetchWindsorData({
+    connector: 'facebook',
+    accountIds: accounts.map((a) => a.id),
+    dateFrom,
+    dateTo,
+    fields: WINDSOR_META_FIELDS,
+  })
+
+  // Group by account_id
+  const byAccount: Record<string, WindsorRawRow[]> = {}
+  for (const row of data) {
+    const accId = String(row.account_id ?? '')
+    if (!byAccount[accId]) byAccount[accId] = []
+    byAccount[accId].push(row)
+  }
+
+  return accounts.map((account) => ({
+    accountId: account.id,
+    accountName: account.name,
+    platform: 'meta' as const,
     data: byAccount[account.id] ?? [],
     error: error ?? null,
   }))
