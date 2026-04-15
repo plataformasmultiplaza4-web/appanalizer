@@ -46,7 +46,7 @@ function TableHeader({
         textAlign: align,
         fontSize: 11,
         fontWeight: 600,
-        color: isActive ? 'var(--brand)' : 'var(--text-3)',
+        color: isActive ? 'var(--brand)' : 'var(--brand-blue)',
         background: 'var(--bg-page)',
         borderBottom: '1px solid var(--border)',
         cursor: sortKey ? 'pointer' : 'default',

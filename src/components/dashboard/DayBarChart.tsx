@@ -1,13 +1,15 @@
 'use client'
 
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
+  CartesianGrid,
+  Legend,
 } from 'recharts'
 import { MoreHorizontal } from 'lucide-react'
 import type { DayData } from '@/types/metrics'
@@ -15,27 +17,26 @@ import { Skeleton } from '@/components/ui/Skeleton'
 
 interface DayBarChartProps {
   data: DayData[]
-  metric?: 'ventas' | 'gasto'
   isLoading?: boolean
+  dateRangeLabel?: string
 }
 
 interface TooltipPayload {
   name: string
   value: number
-  payload: DayData
+  color: string
 }
 
 function CustomTooltip({
   active,
   payload,
-  metric,
+  label,
 }: {
   active?: boolean
   payload?: TooltipPayload[]
-  metric: 'ventas' | 'gasto'
+  label?: string
 }) {
   if (!active || !payload?.length) return null
-  const d = payload[0].payload
   return (
     <div
       style={{
@@ -47,27 +48,23 @@ function CustomTooltip({
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
       }}
     >
-      <div style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 2 }}>
-        {d.day}
-      </div>
-      <div style={{ color: 'var(--text-2)' }}>
-        {metric === 'ventas'
-          ? `${d.ventas} ventas`
-          : `S/. ${d.gasto.toFixed(0)} gasto`}
-      </div>
+      <div style={{ fontWeight: 600, color: 'var(--brand-blue)', marginBottom: 6 }}>{label}</div>
+      {payload.map((p) => (
+        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color }} />
+          <span style={{ color: 'var(--text-2)' }}>{p.name}:</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{p.value}</span>
+        </div>
+      ))}
     </div>
   )
 }
 
 export function DayBarChart({
   data,
-  metric = 'ventas',
   isLoading = false,
+  dateRangeLabel,
 }: DayBarChartProps) {
-  // Highlight the day with highest value
-  const maxValue = Math.max(...data.map((d) => (metric === 'ventas' ? d.ventas : d.gasto)))
-  const todayIndex = data.length - 1
-
   if (isLoading) {
     return (
       <div
@@ -78,20 +75,20 @@ export function DayBarChart({
           padding: '14px 16px',
         }}
       >
-        <Skeleton height={14} width="40%" />
-        <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'flex-end', height: 100 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Skeleton height={14} width="40%" />
+          <Skeleton height={14} width="20%" />
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 140 }}>
           {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton
-              key={i}
-              width={28}
-              height={20 + Math.random() * 60}
-              borderRadius={4}
-            />
+            <Skeleton key={i} width={28} height={30 + Math.random() * 90} borderRadius={4} />
           ))}
         </div>
       </div>
     )
   }
+
+  const rangeLabel = dateRangeLabel ?? (data.length > 0 ? `${data[0]?.day} — ${data[data.length - 1]?.day}` : '')
 
   return (
     <div
@@ -111,111 +108,100 @@ export function DayBarChart({
           marginBottom: 14,
         }}
       >
-        <span
-          style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}
-        >
-          {metric === 'ventas' ? 'Ventas por día' : 'Gasto por día'}
-        </span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {/* Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div
             style={{
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              background: 'var(--brand-light)',
               display: 'flex',
-              background: 'var(--bg-page)',
-              borderRadius: 6,
-              padding: 2,
-              gap: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {['ventas', 'gasto'].map((m) => (
-              <span
-                key={m}
-                style={{
-                  padding: '2px 8px',
-                  borderRadius: 5,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  background: metric === m ? 'white' : 'transparent',
-                  color: metric === m ? 'var(--brand)' : 'var(--text-3)',
-                  textTransform: 'capitalize',
-                  cursor: 'pointer',
-                  boxShadow: metric === m ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                }}
-              >
-                {m}
-              </span>
-            ))}
+            <span style={{ fontSize: 9, color: 'var(--brand)', fontWeight: 700 }}>i</span>
           </div>
-          <button
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-3)',
-              display: 'flex',
-            }}
-          >
-            <MoreHorizontal size={14} />
-          </button>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>
+            Conversiones por mes
+          </span>
+          {rangeLabel && (
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{rangeLabel}</span>
+          )}
         </div>
+        <button
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'var(--text-3)',
+            display: 'flex',
+          }}
+        >
+          <MoreHorizontal size={15} />
+        </button>
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={data} barCategoryGap="30%">
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart data={data} barCategoryGap="30%" margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid vertical={false} stroke="var(--border-light)" strokeDasharray="0" />
           <XAxis
             dataKey="dayShort"
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 9, fill: 'var(--text-3)' }}
+            tick={{ fontSize: 10, fill: 'var(--text-3)' }}
           />
-          <YAxis hide />
-          <Tooltip
-            content={<CustomTooltip metric={metric} />}
-            cursor={false}
+          <YAxis
+            yAxisId="left"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+            width={30}
           />
-          <Bar dataKey={metric} radius={[4, 4, 0, 0]}>
-            {data.map((entry, index) => {
-              const isHighlight =
-                (metric === 'ventas' ? entry.ventas : entry.gasto) === maxValue
-              const isToday = index === todayIndex
-              return (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={
-                    isHighlight || isToday
-                      ? 'var(--brand)'
-                      : 'var(--brand-light)'
-                  }
-                />
-              )
-            })}
-          </Bar>
-        </BarChart>
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+            width={36}
+            tickFormatter={(v) => `$${v}`}
+          />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+          <Legend
+            wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+            formatter={(value) => <span style={{ color: 'var(--text-2)', fontSize: 11 }}>{value}</span>}
+          />
+          <Bar
+            yAxisId="left"
+            dataKey="ventas"
+            name="Ventas"
+            fill="#C7D2F8"
+            radius={[3, 3, 0, 0]}
+          />
+          <Line
+            yAxisId="left"
+            type="monotone"
+            dataKey="ventas"
+            name="Conversiones"
+            stroke="#4A6CF7"
+            strokeWidth={2}
+            dot={false}
+            legendType="none"
+          />
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="gasto"
+            name="Gasto ($)"
+            stroke="#7C3AED"
+            strokeWidth={2}
+            dot={false}
+            strokeDasharray="4 2"
+          />
+        </ComposedChart>
       </ResponsiveContainer>
-
-      {/* Legend */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginTop: 8,
-        }}
-      >
-        <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 2,
-            background: 'var(--brand)',
-            display: 'inline-block',
-          }}
-        />
-        <span style={{ fontSize: 10, color: 'var(--text-3)' }}>
-          {metric === 'ventas' ? 'Ventas totales' : 'Gasto total'} — últimos 7 días
-        </span>
-      </div>
     </div>
   )
 }

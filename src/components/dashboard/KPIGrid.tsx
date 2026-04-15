@@ -16,7 +16,6 @@ interface KPIGridProps {
   isLoading?: boolean
   selectedKPI?: string
   onSelectKPI?: (id: string) => void
-  platform?: 'all' | 'meta' | 'tiktok'
 }
 
 export function KPIGrid({
@@ -24,103 +23,128 @@ export function KPIGrid({
   isLoading = false,
   selectedKPI,
   onSelectKPI,
-  platform = 'all',
 }: KPIGridProps) {
-  const pl = platform === 'meta' ? 'meta' : platform === 'tiktok' ? 'tiktok' : 'all'
-
   const cards = [
     {
       id: 'gasto',
-      label: platform === 'meta' ? 'Meta Spend' : platform === 'tiktok' ? 'TikTok Spend' : 'Gasto Total',
+      label: 'Gasto Total',
       value: isLoading || !kpis ? '—' : formatCurrencyShort(kpis.totalGasto),
-      sublabel: isLoading || !kpis ? '' : formatCurrency(kpis.totalGasto),
+      sublabel: 'Este mes',
       delta: kpis?.gastoDelta,
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor: 'brand' as const,
+      platform: 'tiktok' as const,
     },
     {
       id: 'ventas',
-      label: platform === 'meta' ? 'Meta Conversiones' : platform === 'tiktok' ? 'TikTok Ventas' : 'Ventas Totales',
+      label: 'Ventas Totales',
       value: isLoading || !kpis ? '—' : formatNumber(kpis.totalVentas),
-      sublabel: 'pedidos confirmados',
+      sublabel: 'Este mes',
       delta: kpis?.ventasDelta,
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor: 'default' as const,
+      platform: 'meta' as const,
     },
     {
       id: 'cpa',
-      label: platform === 'meta' ? 'Meta CPA' : platform === 'tiktok' ? 'TikTok CPA' : 'CPA Promedio',
+      label: 'CPA Promedio',
       value: isLoading || !kpis ? '—' : formatCurrency(kpis.cpaPromedio),
-      sublabel: 'costo por venta',
+      sublabel: 'Costo por venta',
       delta: kpis?.cpaDelta !== undefined ? -(kpis.cpaDelta) : undefined,
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor:
-        kpis && kpis.cpaPromedio <= 35
-          ? ('success' as const)
-          : kpis && kpis.cpaPromedio <= 42
-            ? ('warning' as const)
-            : ('danger' as const),
+      platform: 'all' as const,
     },
     {
       id: 'roas',
-      label: platform === 'meta' ? 'Meta ROAS' : platform === 'tiktok' ? 'TikTok ROAS' : 'ROAS Promedio',
+      label: 'ROAS Promedio',
       value: isLoading || !kpis ? '—' : formatRoas(kpis.roasPromedio),
-      sublabel: 'retorno en inversión',
+      sublabel: 'Retorno inversión',
       delta: kpis?.roasDelta,
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor:
-        kpis && kpis.roasPromedio >= 2.5
-          ? ('success' as const)
-          : kpis && kpis.roasPromedio >= 1.5
-            ? ('warning' as const)
-            : ('danger' as const),
+      platform: 'all' as const,
     },
     {
       id: 'ctr',
-      label: platform === 'meta' ? 'Meta CTR' : platform === 'tiktok' ? 'TikTok CTR' : 'CTR Promedio',
+      label: 'CTR Promedio',
       value: isLoading || !kpis ? '—' : formatPercent(kpis.ctrPromedio),
-      sublabel: 'click-through rate',
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor: 'default' as const,
+      sublabel: 'Click-through rate',
+      platform: 'tiktok' as const,
     },
     {
       id: 'frecuencia',
-      label: 'Frecuencia Prom.',
+      label: 'Frecuencia',
       value: isLoading || !kpis ? '—' : formatFrequency(kpis.frecuenciaPromedio),
-      sublabel: 'promedio por usuario',
-      platform: pl as 'meta' | 'tiktok' | 'all',
-      valueColor:
-        kpis && kpis.frecuenciaPromedio >= 2.5
-          ? ('danger' as const)
-          : kpis && kpis.frecuenciaPromedio >= 2.0
-            ? ('warning' as const)
-            : ('default' as const),
+      sublabel: 'Por usuario',
+      platform: 'tiktok' as const,
     },
   ]
 
   return (
     <div
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 10,
-        marginBottom: 16,
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 10,
+        padding: '12px 16px',
       }}
     >
-      {cards.map((card) => (
-        <KPICard
-          key={card.id}
-          label={card.label}
-          value={card.value}
-          sublabel={card.sublabel}
-          delta={card.delta}
-          platform={card.platform}
-          valueColor={card.valueColor}
-          isSelected={selectedKPI === card.id}
-          isLoading={isLoading}
-          onClick={() => onSelectKPI?.(card.id)}
-        />
-      ))}
+      {/* Section header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: '50%',
+            background: 'var(--brand-light)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontSize: 9, color: 'var(--brand)', fontWeight: 700 }}>i</span>
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>
+          KPIs Principales
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            color: 'var(--brand)',
+            background: 'var(--brand-light)',
+            padding: '2px 8px',
+            borderRadius: 10,
+            marginLeft: 4,
+          }}
+        >
+          Este mes
+        </span>
+      </div>
+
+      {/* Horizontal scrollable strip */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          overflowX: 'auto',
+          paddingBottom: 4,
+        }}
+      >
+        {cards.map((card) => (
+          <KPICard
+            key={card.id}
+            label={card.label}
+            value={card.value}
+            sublabel={card.sublabel}
+            delta={card.delta}
+            platform={card.platform}
+            isSelected={selectedKPI === card.id}
+            isLoading={isLoading}
+            onClick={() => onSelectKPI?.(card.id)}
+          />
+        ))}
+      </div>
     </div>
   )
 }

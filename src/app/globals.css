@@ -3,36 +3,35 @@
 @tailwind utilities;
 
 :root {
-  /* ── Brand — teal/cyan (mastermetrics palette) ─────────────────────── */
-  --brand: #00BCD4;
-  --brand-dark: #0097A7;
-  --brand-light: #E0F7FA;
-  --brand-mid: #4DD0E1;
+  /* Brand — MasterMetrics teal */
+  --brand: #00BEC8;
+  --brand-dark: #009FA9;
+  --brand-light: #E0F7F9;
+  --brand-mid: #4DD0D6;
+  --brand-blue: #1B2559;      /* dark navy — titles, data values */
 
-  /* ── Layout ─────────────────────────────────────────────────────────── */
+  /* Layout */
   --sidebar-bg: #FFFFFF;
   --sidebar-border: #E5E7EB;
-  --sidebar-icon: #9CA3AF;
-  --sidebar-icon-active: #00BCD4;
-  --sidebar-icon-active-bg: rgba(0,188,212,0.10);
   --surface: #FFFFFF;
-  --bg-page: #F8F9FC;
-
-  /* ── Borders & text ─────────────────────────────────────────────────── */
+  --bg-page: #F5F7FA;
   --border: #E5E7EB;
   --border-light: #F3F4F6;
+
+  /* Text */
   --text-1: #111827;
   --text-2: #6B7280;
   --text-3: #9CA3AF;
 
-  /* ── Platform colours ───────────────────────────────────────────────── */
+  /* Platform colors */
   --meta: #1877F2;
-  --tiktok: #ff0050;
+  --google: #4285F4;
+  --tiktok: #010101;
 
-  /* ── Semantic ───────────────────────────────────────────────────────── */
-  --success: #10B981;
-  --success-bg: #D1FAE5;
-  --success-text: #065F46;
+  /* Semantic */
+  --success: #22C55E;
+  --success-bg: #DCFCE7;
+  --success-text: #15803D;
   --warning: #F59E0B;
   --warning-bg: #FEF3C7;
   --warning-text: #92400E;
@@ -40,9 +39,10 @@
   --danger-bg: #FEE2E2;
   --danger-text: #991B1B;
 
-  /* ── Dimensions ─────────────────────────────────────────────────────── */
+  /* Dimensions */
   --sidebar-w: 44px;
-  --topbar-h: 52px;
+  --global-topbar-h: 52px;
+  --topbar-h: 48px;
 }
 
 * {
@@ -56,7 +56,7 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   font-size: 13px;
   color: var(--text-1);
   background: var(--bg-page);
@@ -66,8 +66,8 @@ body {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -101,10 +101,11 @@ button {
 
 /* KPI value style */
 .kpi-value {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1.2;
+  color: var(--brand-blue);
 }
 
 /* Animation for loading */

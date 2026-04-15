@@ -31,7 +31,7 @@ export default function SourcesPage() {
             Estado de Windsor.ai
           </h3>
           <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 8 }}>
-            EcomBuild Analytics usa Windsor.ai como conector de datos. Tus cuentas de TikTok Ads
+            EcomBuild Analizer Metrics usa Windsor.ai como conector de datos. Tus cuentas de TikTok Ads
             están conectadas (BEAUTY 0001-003, WEB STORE 01-04). Para activar datos reales:
           </p>
           <ol
