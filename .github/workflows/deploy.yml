@@ -1,9 +1,10 @@
 name: Deploy to Hostinger
 
 on:
+  workflow_dispatch:       # Botón manual en GitHub Actions
   push:
     branches:
-      - main          # cambia a tu rama si es diferente
+      - main
 
 jobs:
   build-and-deploy:
@@ -12,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: claude/clone-landing-meta-ads-8OmrP   # rama actual
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,5 +37,5 @@ jobs:
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
           local-dir: ./out/
-          server-dir: /public_html/    # ajusta si tu carpeta es diferente
-          dangerous-clean-slate: false
+          server-dir: /domains/peachpuff-giraffe-177993.hostingersite.com/public_html/
+          dangerous-clean-slate: true
