@@ -41,31 +41,6 @@ const PLATFORM_PILLS: { id: PlatformFilter; label: string; icon?: React.ReactNod
   },
 ]
 
-// ── Demo banner ───────────────────────────────────────────────────────────
-
-function DemoBanner({ isExpired }: { isExpired: boolean }) {
-  return (
-    <div
-      style={{
-        padding: '6px 20px',
-        background: 'linear-gradient(90deg, #E0F7FA 0%, #B2EBF2 100%)',
-        borderBottom: '1px solid #80DEEA',
-        fontSize: 11,
-        color: '#006064',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        flexShrink: 0,
-      }}
-    >
-      <span>📊</span>
-      {isExpired
-        ? 'Licencia Windsor expirada — datos demo. Renueva en windsor.ai/pricing y agrega WINDSOR_API_KEY al .env.local'
-        : 'Modo demo — datos de ejemplo. Configura WINDSOR_API_KEY en .env.local para datos reales.'}
-    </div>
-  )
-}
-
 // ── Dashboard content header ─────────────────────────────────────────────
 
 function DashboardHeader({
@@ -240,7 +215,7 @@ export default function DashboardPage() {
   const [dateRange, setDateRange] = useState<DateRange>('7d')
   const [platform, setPlatform] = useState<PlatformFilter>('all')
 
-  const { metrics, isLoading, isDemo, isExpired } = useMetrics(dateRange)
+  const { metrics, isLoading } = useMetrics(dateRange)
   const { summary, isLoading: isAnalyzing, generatedAt, analyze } = useAISummary()
 
   async function handleAnalyze() {
@@ -262,8 +237,6 @@ export default function DashboardPage() {
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
       />
-
-      {isDemo && <DemoBanner isExpired={!!isExpired} />}
 
       <DashboardHeader
         title="EcomBuild Dashboard"
