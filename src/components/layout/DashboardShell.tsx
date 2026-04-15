@@ -6,7 +6,6 @@ import type { DateRange } from '@/types/dashboard'
 
 interface DashboardShellProps {
   children: React.ReactNode
-  title?: string
   dateRange?: DateRange
   onDateChange?: (range: DateRange) => void
   onAnalyze?: () => void
@@ -15,7 +14,6 @@ interface DashboardShellProps {
 
 export function DashboardShell({
   children,
-  title,
   dateRange,
   onDateChange,
   onAnalyze,
@@ -35,7 +33,6 @@ export function DashboardShell({
         }}
       >
         <Topbar
-          title={title}
           dateRange={dateRange}
           onDateChange={onDateChange}
           onAnalyze={onAnalyze}
