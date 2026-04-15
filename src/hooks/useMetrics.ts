@@ -60,8 +60,10 @@ export function useMetrics(dateRange: DateRange = '7d') {
     }
   }
 
-  const metricsData: TransformedData = data?.data ?? (error ? MOCK_TRANSFORMED_DATA : MOCK_TRANSFORMED_DATA)
-  const isDemo = data?.source === 'demo' || !!error
+  const metricsData: TransformedData = data?.data ?? MOCK_TRANSFORMED_DATA
+  // Only show demo banner if API explicitly returns demo source or license expired
+  // Don't show it during loading or transient network errors
+  const isDemo = data?.source === 'demo' || (!!error && !isLoading)
   const isExpired = error?.message?.includes('license') || error?.message?.includes('expired')
 
   return {
