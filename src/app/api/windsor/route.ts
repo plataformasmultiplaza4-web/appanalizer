@@ -11,9 +11,20 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { dateFrom, dateTo, demo, platforms } = body
 
+    // Accept both WINDSOR_API_KEY and NEXT_PUBLIC_WINDSOR_API_KEY
+    const apiKey = process.env.WINDSOR_API_KEY ?? process.env.NEXT_PUBLIC_WINDSOR_API_KEY
+    if (apiKey && !process.env.WINDSOR_API_KEY) {
+      process.env.WINDSOR_API_KEY = apiKey
+    }
+
     // Demo mode: return mock data
     if (demo || process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
       return NextResponse.json({ data: MOCK_TRANSFORMED_DATA, source: 'demo' })
+    }
+
+    // No API key → demo mode
+    if (!apiKey) {
+      return NextResponse.json({ data: MOCK_TRANSFORMED_DATA, source: 'demo', error: 'WINDSOR_API_KEY not configured' })
     }
 
     if (!dateFrom || !dateTo) {

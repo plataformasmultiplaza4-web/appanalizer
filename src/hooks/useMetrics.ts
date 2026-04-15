@@ -5,144 +5,40 @@ import type { TransformedData } from '@/types/metrics'
 import type { DateRange } from '@/types/dashboard'
 import { getDateRange } from '@/lib/utils'
 import { MOCK_TRANSFORMED_DATA } from '@/lib/mock-data'
-import {
-  TIKTOK_AD_ACCOUNTS,
-  META_AD_ACCOUNTS,
-  WINDSOR_TIKTOK_FIELDS,
-  WINDSOR_META_FIELDS,
-} from '@/lib/constants'
-import { transformWindsorData } from '@/lib/windsor'
-import type { WindsorAccountData, WindsorRawRow } from '@/types/windsor'
 
-const WINDSOR_BASE = 'https://api.windsor.ai/data'
-
-async function fetchWindsorDirect(params: {
-  connector: string
-  accountIds: string[]
-  dateFrom: string
-  dateTo: string
-  fields: string[]
-  apiKey: string
-}): Promise<{ data: WindsorRawRow[]; error?: string }> {
-  try {
-    const res = await fetch(WINDSOR_BASE, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${params.apiKey}`,
-      },
-      body: JSON.stringify({
-        connector: params.connector,
-        date_from: params.dateFrom,
-        date_to: params.dateTo,
-        fields: params.fields,
-        breakdown: 'ad',
-        account_ids: params.accountIds,
-      }),
-    })
-
-    if (!res.ok) {
-      const text = await res.text()
-      return { data: [], error: `Windsor ${res.status}: ${text.slice(0, 100)}` }
-    }
-
-    const json = await res.json()
-
-    if (json.data?.[0]?.ad_name?.includes('License expired')) {
-      return { data: [], error: 'Windsor license expired' }
-    }
-
-    return { data: json.data ?? [] }
-  } catch (err) {
-    return { data: [], error: String(err) }
-  }
-}
-
-async function fetchAllMetrics(dateRange: DateRange): Promise<{
+interface WindsorAPIResponse {
   data: TransformedData
   source: 'windsor' | 'demo'
   error?: string
-}> {
-  const apiKey = process.env.NEXT_PUBLIC_WINDSOR_API_KEY
+  hint?: string
+}
+
+async function fetchMetrics(dateRange: DateRange): Promise<WindsorAPIResponse> {
   const { from, to } = getDateRange(dateRange)
 
-  // No API key — return demo
-  if (!apiKey) {
-    return { data: MOCK_TRANSFORMED_DATA, source: 'demo', error: 'WINDSOR_API_KEY not configured' }
+  const res = await fetch('/api/windsor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dateFrom: from, dateTo: to }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error ?? `HTTP ${res.status}`)
   }
 
-  const tiktokAccounts = Object.values(TIKTOK_AD_ACCOUNTS)
-  const metaAccounts = Object.values(META_AD_ACCOUNTS)
-
-  const [tiktokResult, metaResult] = await Promise.all([
-    fetchWindsorDirect({
-      connector: 'tiktok',
-      accountIds: tiktokAccounts.map((a) => a.id),
-      dateFrom: from,
-      dateTo: to,
-      fields: WINDSOR_TIKTOK_FIELDS,
-      apiKey,
-    }),
-    fetchWindsorDirect({
-      connector: 'facebook',
-      accountIds: metaAccounts.map((a) => a.id),
-      dateFrom: from,
-      dateTo: to,
-      fields: WINDSOR_META_FIELDS,
-      apiKey,
-    }),
-  ])
-
-  const byTiktokAccount: Record<string, WindsorRawRow[]> = {}
-  for (const row of tiktokResult.data) {
-    const id = String(row.account_id ?? '')
-    if (!byTiktokAccount[id]) byTiktokAccount[id] = []
-    byTiktokAccount[id].push(row)
-  }
-
-  const byMetaAccount: Record<string, WindsorRawRow[]> = {}
-  for (const row of metaResult.data) {
-    const id = String(row.account_id ?? '')
-    if (!byMetaAccount[id]) byMetaAccount[id] = []
-    byMetaAccount[id].push(row)
-  }
-
-  const allAccountsData: WindsorAccountData[] = [
-    ...tiktokAccounts.map((a) => ({
-      accountId: a.id,
-      accountName: a.name,
-      platform: 'tiktok' as const,
-      data: byTiktokAccount[a.id] ?? [],
-      error: tiktokResult.error ?? null,
-    })),
-    ...metaAccounts.map((a) => ({
-      accountId: a.id,
-      accountName: a.name,
-      platform: 'meta' as const,
-      data: byMetaAccount[a.id] ?? [],
-      error: metaResult.error ?? null,
-    })),
-  ]
-
-  const hasData = allAccountsData.some((a) => a.data.length > 0)
-  const error = tiktokResult.error ?? metaResult.error ?? undefined
-
-  if (!hasData) {
-    return { data: MOCK_TRANSFORMED_DATA, source: 'demo', error }
-  }
-
-  const transformed = transformWindsorData(allAccountsData)
-  return { data: transformed, source: 'windsor' }
+  return res.json()
 }
 
 export function useMetrics(dateRange: DateRange = '7d') {
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading } = useSWR<WindsorAPIResponse>(
     ['metrics', dateRange],
-    () => fetchAllMetrics(dateRange),
+    () => fetchMetrics(dateRange),
     {
       refreshInterval: 5 * 60 * 1000,
       revalidateOnFocus: false,
-      onErrorRetry: (_err, _key, _config, revalidate, { retryCount }) => {
+      onErrorRetry: (err, _key, _config, revalidate, { retryCount }) => {
+        if (err.message?.includes('license')) return
         if (retryCount >= 2) return
         setTimeout(() => revalidate({ retryCount }), 5000)
       },
@@ -150,9 +46,8 @@ export function useMetrics(dateRange: DateRange = '7d') {
   )
 
   const metricsData: TransformedData = data?.data ?? MOCK_TRANSFORMED_DATA
-  const isDemo = data?.source === 'demo' && !isLoading
-  const isExpired = data?.error?.includes('expired') || data?.error?.includes('license')
-  const debugError = data?.error ?? (error ? String(error) : null)
+  const isDemo = (data?.source === 'demo' || !!error) && !isLoading
+  const isExpired = error?.message?.includes('license') || error?.message?.includes('expired') || data?.error?.includes('expired')
 
   return {
     metrics: metricsData,
@@ -160,7 +55,6 @@ export function useMetrics(dateRange: DateRange = '7d') {
     isDemo,
     isExpired: !!isExpired,
     error: error ?? null,
-    debugError,
     refetch: async () => {},
   }
 }
