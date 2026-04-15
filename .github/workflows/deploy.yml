@@ -1,14 +1,15 @@
-name: Deploy to Hostinger
+name: CI Build Check
 
 on:
-  workflow_dispatch:       # Botón manual en GitHub Actions
+  workflow_dispatch:
   push:
     branches:
       - main
       - claude/build-ecom-analytics-saas-Ioldt
+      - claude/ai-website-cloner-template-dNncV
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,18 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build static export
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_WINDSOR_API_KEY: ${{ secrets.WINDSOR_API_KEY }}
           NEXT_PUBLIC_DEMO_MODE: 'false'
-
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.HOSTINGER_FTP_HOST }}
-          username: ${{ secrets.HOSTINGER_FTP_USER }}
-          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
-          local-dir: ./out/
-          server-dir: /domains/dimgrey-narwhal-803722.hostingersite.com/public_html/
-          dangerous-clean-slate: true
