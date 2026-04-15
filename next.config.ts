@@ -1,14 +1,9 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Static export for Hostinger shared hosting (no Node.js required)
-  output: 'export',
+  // Standalone output for Node.js deployment (Hostinger, VPS, Docker)
+  output: 'standalone',
   images: { unoptimized: true },
-
-  // Bake demo mode into the build — no API keys needed at runtime
-  env: {
-    NEXT_PUBLIC_DEMO_MODE: 'true',
-  },
 }
 
 export default nextConfig
