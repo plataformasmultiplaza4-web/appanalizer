@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'EcomBuild Analytics',
-  description: 'Dashboard de analytics para ecommerce COD — Ecom Build Academy',
+  title: 'EcomBuild Analizer',
+  description: 'Dashboard de analytics para ecommerce — EcomBuild',
 }
 
 export default function RootLayout({

@@ -70,7 +70,7 @@ export function GlobalTopbar() {
           whiteSpace: 'nowrap',
         }}
       >
-        Master Metrics
+        EcomBuild Analizer
       </span>
 
       {/* Spacer */}
