@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos · Multiplaza Analytics</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080c;--surface:#0d0f18;--surface2:#111420;--border:#1c1f2e;
+  --text:#e8eaf0;--muted:#5a6070;--muted2:#8b90a0;
+  --accent:oklch(0.65 0.18 280);--accent-dim:oklch(0.45 0.18 280);
+  --green:#22c55e;--yellow:#fbbf24;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;
+  --sidebar:200px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif;font-size:13px;display:flex;flex-direction:column}
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;z-index:20}
+.logo{width:30px;height:30px;background:var(--accent);border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.logo svg{width:16px;height:16px}
+.brand{font-size:14px;font-weight:600}
+.brand span{color:var(--muted2);font-weight:400}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.chip{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:500;background:var(--surface2);border:1px solid var(--border);color:var(--muted2)}
+.chip.live{border-color:var(--green);color:var(--green)}
+.btn-link{text-decoration:none;color:var(--muted2);font-size:12px;padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);transition:.15s}
+.btn-link:hover{color:var(--text);border-color:var(--accent)}
+
+/* ── Layout ─────────────────────────────────────────── */
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-section{padding:14px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sidebar-filter{display:flex;flex-direction:column;gap:4px;padding:0 10px 10px}
+.sidebar-filter label{font-size:11px;color:var(--muted2);margin-bottom:2px}
+.sidebar-filter select,.sidebar-filter input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:12px;outline:none;appearance:none;cursor:pointer}
+.sidebar-filter select:focus,.sidebar-filter input:focus{border-color:var(--accent)}
+.sidebar-divider{height:1px;background:var(--border);margin:6px 10px}
+
+.sidebar-kpi{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.kpi-mini{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.kpi-mini-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.kpi-mini-value{font-size:16px;font-weight:700;color:var(--text)}
+.kpi-mini-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+.btn-reset{margin:0 10px 14px;padding:7px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted2);font-size:12px;cursor:pointer;text-align:center;transition:.15s}
+.btn-reset:hover{border-color:var(--red);color:var(--red)}
+
+/* ── Main ───────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Search bar ─────────────────────────────────────── */
+.searchbar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.search-wrap{position:relative;flex:1;max-width:460px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+#searchInput{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px 8px 34px;font-size:13px;outline:none}
+#searchInput:focus{border-color:var(--accent)}
+#searchInput::placeholder{color:var(--muted)}
+.results-info{font-size:12px;color:var(--muted2);margin-left:auto}
+.btn-export{padding:7px 14px;border-radius:6px;background:var(--accent-dim);border:1px solid var(--accent);color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;flex-shrink:0}
+.btn-export:hover{background:var(--accent)}
+
+/* ── Table ──────────────────────────────────────────── */
+.table-wrap{flex:1;overflow:auto;position:relative}
+table{width:max-content;min-width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:10}
+th{background:#0b0d16;color:var(--muted);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;padding:9px 14px;border-bottom:2px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;transition:.15s}
+th:hover{color:var(--text);background:#0f1120}
+th .sort-icon{margin-left:4px;opacity:.4;font-style:normal}
+th.active .sort-icon{opacity:1;color:var(--accent)}
+td{padding:8px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+tr:nth-child(even) td{background:#0a0c13}
+tr:hover td{background:#131623}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-programado{background:#0d2b1a;color:#4ade80}.b-entregado{background:#052b10;color:#22c55e}
+.b-cancelado{background:#2b0d0d;color:#f87171}.b-compromiso{background:#2b250d;color:#fbbf24}
+.b-registrado{background:#0d1b2b;color:#60a5fa}.b-pendiente{background:#1a0d2b;color:#a78bfa}
+
+/* ── Pagination ─────────────────────────────────────── */
+.pager{display:flex;align-items:center;gap:6px;padding:9px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.pg{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;cursor:pointer;display:grid;place-items:center;transition:.12s}
+.pg:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pg:disabled{opacity:.3;cursor:default}
+.pg.cur{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+.pg-nums{display:flex;gap:4px}
+.pg-info{color:var(--muted2);font-size:12px;margin:0 8px}
+.pg-size{margin-left:auto;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer;outline:none}
+
+/* ── Loading overlay ────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:200}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-text{color:var(--muted2);font-size:14px}
+.load-bar-wrap{width:240px;height:3px;background:var(--border);border-radius:99px;overflow:hidden}
+.load-bar{height:100%;background:var(--accent);border-radius:99px;width:0%;transition:width .3s}
+
+.empty-state{padding:80px 40px;text-align:center;color:var(--muted)}
+.empty-state svg{width:40px;height:40px;margin-bottom:14px;opacity:.3}
+.empty-state p{font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="load-text" id="loadMsg">Conectando con SharePoint…</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="loadBar"></div></div>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="logo"><svg viewBox="0 0 16 16" fill="white"><rect x="1" y="7" width="3" height="8" rx="1"/><rect x="6" y="4" width="3" height="11" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg></div>
+  <div class="brand">Multiplaza <span>/ Pedidos</span></div>
+  <div class="topbar-right">
+    <span class="chip live" id="statusChip">● Cargando…</span>
+    <a href="/" class="btn-link">← Dashboard</a>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Filtros</div>
+    <div class="sidebar-filter">
+      <label>Tienda</label>
+      <select id="fTienda"><option value="">Todas</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Estado</label>
+      <select id="fEstado"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Tipo de pedido</label>
+      <select id="fTipoPedido"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Tipo de envío</label>
+      <select id="fTipoEnvio"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Departamento</label>
+      <select id="fDepto"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Subestado</label>
+      <select id="fSubestado"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-filter">
+      <label>Asesor</label>
+      <select id="fAsesor"><option value="">Todos</option></select>
+    </div>
+    <div class="sidebar-divider"></div>
+    <button class="btn-reset" id="btnReset">✕ Limpiar filtros</button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">Resumen</div>
+    <div class="sidebar-kpi">
+      <div class="kpi-mini"><div class="kpi-mini-label">Pedidos</div><div class="kpi-mini-value" id="kpiPedidos">—</div><div class="kpi-mini-sub" id="kpiPedidosSub"></div></div>
+      <div class="kpi-mini"><div class="kpi-mini-label">Facturación</div><div class="kpi-mini-value" id="kpiFact" style="font-size:13px">—</div></div>
+      <div class="kpi-mini"><div class="kpi-mini-label">Ticket prom.</div><div class="kpi-mini-value" id="kpiTicket" style="font-size:13px">—</div></div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="searchbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
+        <input id="searchInput" type="text" placeholder="Buscar por ID, cliente, producto, dirección…">
+      </div>
+      <span class="results-info" id="resultsInfo"></span>
+      <button class="btn-export" id="btnExport">↓ Exportar CSV</button>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <p>Sin resultados para los filtros aplicados</p>
+      </div>
+    </div>
+
+    <div class="pager">
+      <button class="pg" id="pgFirst">«</button>
+      <button class="pg" id="pgPrev">‹</button>
+      <div class="pg-nums" id="pgNums"></div>
+      <button class="pg" id="pgNext">›</button>
+      <button class="pg" id="pgLast">»</button>
+      <span class="pg-info" id="pgInfo"></span>
+      <select class="pg-size" id="pgSize">
+        <option value="50">50 / página</option>
+        <option value="100" selected>100 / página</option>
+        <option value="250">250 / página</option>
+        <option value="500">500 / página</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLS = [
+  {key:'IDPEDIDO',      label:'ID Pedido'},
+  {key:'FECHA_REGISTRO',label:'Fecha'},
+  {key:'HORA_REGISTRO', label:'Hora'},
+  {key:'TIENDA',        label:'Tienda'},
+  {key:'TIPO_PEDIDO',   label:'Tipo Pedido'},
+  {key:'TIPO_ENVIO',    label:'Tipo Envío'},
+  {key:'ESTADO',        label:'Estado'},
+  {key:'SUBESTADO',     label:'Subestado'},
+  {key:'MONTO',         label:'Monto (S/)'},
+  {key:'CANTIDAD',      label:'Cant.'},
+  {key:'NOMBRE_CLIENTE',label:'Cliente'},
+  {key:'NUM_TELEFONO',  label:'Teléfono'},
+  {key:'DEPARTAMENTO',  label:'Departamento'},
+  {key:'PROVINCIA',     label:'Provincia'},
+  {key:'DISTRITO',      label:'Distrito'},
+  {key:'DIRECCION',     label:'Dirección'},
+  {key:'PEDIDO',        label:'Pedido'},
+  {key:'SKU_PRINCIPAL', label:'SKU'},
+  {key:'PRODUCTO_PRINCIPAL',label:'Producto'},
+  {key:'NOMBRE_SHOPIFY',label:'Shopify'},
+  {key:'REFERENCIA',    label:'Referencia'},
+  {key:'USUARIO_ASESOR',label:'Asesor'},
+  {key:'FECHA_GESTION', label:'F. Gestión'},
+  {key:'HORA_GESTION',  label:'H. Gestión'},
+  {key:'FECHA_PROGRAMACION',label:'F. Programación'},
+  {key:'OBSERVACIONES', label:'Observaciones'},
+  {key:'crfba_dias',    label:'Día'},
+  {key:'crfba_mes',     label:'Mes'},
+  {key:'crfba_ano',     label:'Año'},
+];
+
+const FILTERS = [
+  {id:'fTienda',    key:'TIENDA'},
+  {id:'fEstado',    key:'ESTADO'},
+  {id:'fTipoPedido',key:'TIPO_PEDIDO'},
+  {id:'fTipoEnvio', key:'TIPO_ENVIO'},
+  {id:'fDepto',     key:'DEPARTAMENTO'},
+  {id:'fSubestado', key:'SUBESTADO'},
+  {id:'fAsesor',    key:'USUARIO_ASESOR'},
+];
+
+let allRows=[], filtered=[], sortKey=null, sortDir=1, page=1, pageSize=100;
+
+// ── Progress bar ────────────────────────────────────
+function setProgress(pct, msg){
+  document.getElementById('loadBar').style.width = pct+'%';
+  document.getElementById('loadMsg').textContent = msg;
+}
+
+// ── Load ────────────────────────────────────────────
+async function load(){
+  setProgress(10,'Descargando datos desde SharePoint…');
+  let buf;
+  try {
+    const r = await fetch('/api/excel.php');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    buf = await r.arrayBuffer();
+  } catch(e){
+    document.getElementById('loadMsg').textContent = 'Error: '+e.message;
+    return;
+  }
+  setProgress(60,'Procesando Excel…');
+  await tick();
+  const wb = XLSX.read(buf, {type:'array', cellDates:false});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const raw = XLSX.utils.sheet_to_json(ws, {defval:'', raw:false});
+  setProgress(90,'Construyendo tabla…');
+  await tick();
+  allRows = raw.map(r => { const o={}; COLS.forEach(c=>{ o[c.key]=r[c.key]??''; }); return o; });
+  buildFilters();
+  buildHeader();
+  applyFilters();
+  setProgress(100,'Listo');
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('statusChip').textContent = '● '+allRows.length.toLocaleString('es')+' pedidos en vivo';
+}
+
+const tick = () => new Promise(r=>setTimeout(r,10));
+
+// ── Header ──────────────────────────────────────────
+function buildHeader(){
+  const tr = document.createElement('tr');
+  COLS.forEach(c=>{
+    const th = document.createElement('th');
+    th.innerHTML = c.label + ' <i class="sort-icon">↕</i>';
+    th.dataset.key = c.key;
+    th.onclick = ()=>toggleSort(c.key);
+    tr.appendChild(th);
+  });
+  document.getElementById('thead').innerHTML='';
+  document.getElementById('thead').appendChild(tr);
+}
+
+// ── Filters ─────────────────────────────────────────
+function buildFilters(){
+  FILTERS.forEach(({id, key})=>{
+    const sel = document.getElementById(id);
+    const vals = [...new Set(allRows.map(r=>r[key]).filter(Boolean))].sort();
+    vals.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+    sel.onchange = applyFilters;
+  });
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const fv = {};
+  FILTERS.forEach(({id, key})=>{ fv[key]=document.getElementById(id).value; });
+
+  filtered = allRows.filter(r=>{
+    for(const [k,v] of Object.entries(fv)) if(v && r[k]!==v) return false;
+    if(q) return COLS.some(c=>String(r[c.key]).toLowerCase().includes(q));
+    return true;
+  });
+
+  if(sortKey) doSort(false);
+  page=1;
+  updateKpis();
+  render();
+}
+
+document.getElementById('searchInput').oninput = applyFilters;
+document.getElementById('btnReset').onclick = ()=>{
+  FILTERS.forEach(({id})=>{ document.getElementById(id).value=''; });
+  document.getElementById('searchInput').value='';
+  applyFilters();
+};
+
+// ── Sort ────────────────────────────────────────────
+function toggleSort(key){
+  if(sortKey===key) sortDir*=-1; else { sortKey=key; sortDir=1; }
+  document.querySelectorAll('th').forEach(t=>{ t.classList.remove('active'); t.querySelector('.sort-icon').textContent='↕'; });
+  const th = document.querySelector(`th[data-key="${key}"]`);
+  if(th){ th.classList.add('active'); th.querySelector('.sort-icon').textContent = sortDir===1?'↑':'↓'; }
+  doSort(true);
+  render();
+}
+function doSort(resetPage){
+  filtered.sort((a,b)=>{
+    const av=a[sortKey], bv=b[sortKey];
+    const an=parseFloat(av), bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn)) return (an-bn)*sortDir;
+    return String(av).localeCompare(String(bv),'es')*sortDir;
+  });
+  if(resetPage) page=1;
+}
+
+// ── KPIs ────────────────────────────────────────────
+function updateKpis(){
+  const total = filtered.length;
+  const monto = filtered.reduce((s,r)=>s+(parseFloat(r.MONTO)||0),0);
+  document.getElementById('kpiPedidos').textContent = total.toLocaleString('es');
+  document.getElementById('kpiPedidosSub').textContent = total===allRows.length ? 'total' : 'de '+allRows.length.toLocaleString('es');
+  document.getElementById('kpiFact').textContent = 'S/ '+monto.toLocaleString('es',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('kpiTicket').textContent = total ? 'S/ '+(monto/total).toLocaleString('es',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+}
+
+// ── Render ──────────────────────────────────────────
+function render(){
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('emptyState');
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total/pageSize));
+  if(page>pages) page=pages;
+
+  document.getElementById('resultsInfo').textContent =
+    total.toLocaleString('es')+' resultado'+(total!==1?'s':'');
+
+  if(!total){ tbody.innerHTML=''; empty.style.display=''; renderPager(0,0); return; }
+  empty.style.display='none';
+
+  const start=(page-1)*pageSize, end=Math.min(start+pageSize,total);
+  const slice=filtered.slice(start,end);
+  const frag=document.createDocumentFragment();
+
+  slice.forEach(r=>{
+    const tr=document.createElement('tr');
+    COLS.forEach(({key})=>{
+      const td=document.createElement('td');
+      const v=r[key];
+      if(key==='ESTADO'){
+        const s=String(v).toLowerCase();
+        const cls=s.includes('program')?'programado':s.includes('entrega')?'entregado':
+          s.includes('cancel')?'cancelado':s.includes('comprom')?'compromiso':
+          s.includes('registr')?'registrado':s.includes('pending')?'pendiente':'';
+        td.innerHTML = cls ? `<span class="badge b-${cls}">${v}</span>` : v||'—';
+      } else if(key==='MONTO' && v!==''){
+        td.textContent = v ? 'S/ '+parseFloat(v).toLocaleString('es',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+        td.style.cssText='text-align:right;font-variant-numeric:tabular-nums;font-weight:500';
+      } else if(key==='IDPEDIDO'){
+        td.style.cssText='font-family:monospace;font-size:12px;color:var(--muted2)';
+        td.textContent=v||'—';
+      } else {
+        td.textContent=v||'—';
+        if(key==='OBSERVACIONES') td.style.maxWidth='200px';
+      }
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  });
+  tbody.replaceChildren(frag);
+  renderPager(pages, start, end, total);
+}
+
+// ── Pager ────────────────────────────────────────────
+function renderPager(pages, start, end, total){
+  const pi = document.getElementById('pgInfo');
+  pi.textContent = total ? `${(start+1).toLocaleString('es')}–${end.toLocaleString('es')} de ${total.toLocaleString('es')}` : '';
+  document.getElementById('pgFirst').disabled = page<=1;
+  document.getElementById('pgPrev').disabled  = page<=1;
+  document.getElementById('pgNext').disabled  = page>=pages;
+  document.getElementById('pgLast').disabled  = page>=pages;
+
+  const nums = document.getElementById('pgNums');
+  nums.innerHTML='';
+  const range = [];
+  for(let i=Math.max(1,page-2);i<=Math.min(pages,page+2);i++) range.push(i);
+  range.forEach(n=>{
+    const b=document.createElement('button');
+    b.className='pg'+(n===page?' cur':'');
+    b.textContent=n;
+    b.onclick=()=>{ page=n; render(); };
+    nums.appendChild(b);
+  });
+}
+
+document.getElementById('pgFirst').onclick=()=>{ page=1; render(); };
+document.getElementById('pgPrev').onclick =()=>{ page--; render(); };
+document.getElementById('pgNext').onclick =()=>{ page++; render(); };
+document.getElementById('pgLast').onclick =()=>{ page=Math.ceil(filtered.length/pageSize); render(); };
+document.getElementById('pgSize').onchange=e=>{ pageSize=+e.target.value; page=1; render(); };
+
+// ── Export CSV ───────────────────────────────────────
+document.getElementById('btnExport').onclick=()=>{
+  const lines=[COLS.map(c=>c.label).join(',')];
+  filtered.forEach(r=>{
+    lines.push(COLS.map(c=>{
+      const v=String(r[c.key]??'').replace(/"/g,'""');
+      return (v.includes(',')||v.includes('"')||v.includes('\n'))?`"${v}"`:v;
+    }).join(','));
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'}));
+  a.download='pedidos_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+};
+
+load();
+</script>
+</body>
+</html>
