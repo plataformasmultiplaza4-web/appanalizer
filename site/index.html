@@ -46,11 +46,12 @@
     }
 
     /* --- Network fetch with abort timeout ------------------ */
+    var _origFetch = window.fetch.bind(window);
     function fetchWithTimeout(url, init, ms) {
       var ctrl = new AbortController();
       var t = setTimeout(function () { ctrl.abort(); }, ms);
       var opts = Object.assign({}, init || {}, { signal: ctrl.signal });
-      return fetch.__orig(url, opts).finally(function () { clearTimeout(t); });
+      return _origFetch(url, opts).finally(function () { clearTimeout(t); });
     }
 
     /* --- Background revalidation --------------------------- */
@@ -84,8 +85,6 @@
     }
 
     /* --- Patched fetch: SWR for Excel, passthrough else ---- */
-    var _origFetch = window.fetch.bind(window);
-    fetch.__orig = _origFetch;
     window.fetch = function (input, init) {
       var url = (typeof input === 'string') ? input
               : (input && input.url) ? input.url : String(input);
