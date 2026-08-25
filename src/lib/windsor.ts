@@ -15,7 +15,7 @@ import {
   WINDSOR_META_FIELDS,
 } from './constants'
 
-const WINDSOR_BASE = 'https://api.windsor.ai/data'
+const WINDSOR_BASE = 'https://connectors.windsor.ai/all'
 
 // ─── Windsor API Client ────────────────────────────────────────────────────
 
@@ -26,47 +26,55 @@ export async function fetchWindsorData(params: {
   dateTo: string
   fields: string[]
 }): Promise<{ data: WindsorRawRow[]; error?: string }> {
-  const apiKey = process.env.WINDSOR_API_KEY
+  const apiKey =
+    process.env.WINDSOR_API_KEY ?? process.env.NEXT_PUBLIC_WINDSOR_API_KEY
   if (!apiKey) {
     return { data: [], error: 'WINDSOR_API_KEY not configured' }
   }
 
-  const body: Record<string, unknown> = {
-    connector: params.connector,
-    date_from: params.dateFrom,
-    date_to: params.dateTo,
-    fields: params.fields,
-    breakdown: 'ad',
-  }
-
-  if (params.accountIds?.length) {
-    body.account_ids = params.accountIds
-  }
-
   try {
-    const res = await fetch(WINDSOR_BASE, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-      next: { revalidate: 300 },
-    })
+    const allRows: WindsorRawRow[] = []
 
-    if (!res.ok) {
-      const text = await res.text()
-      return { data: [], error: `Windsor API error ${res.status}: ${text}` }
+    // Windsor GET API: fetch per account_id (or once without filter)
+    const accountIds = params.accountIds?.length ? params.accountIds : [undefined]
+
+    for (const accountId of accountIds) {
+      const url = new URL(WINDSOR_BASE)
+      url.searchParams.set('api_key', apiKey)
+      url.searchParams.set('date_from', params.dateFrom)
+      url.searchParams.set('date_to', params.dateTo)
+      url.searchParams.set('fields', params.fields.join(','))
+      url.searchParams.set('connector', params.connector)
+      if (accountId) url.searchParams.set('account_id', accountId)
+
+      const res = await fetch(url.toString(), {
+        method: 'GET',
+        next: { revalidate: 300 },
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        return { data: [], error: `Windsor API error ${res.status}: ${text}` }
+      }
+
+      const json = await res.json()
+
+      // Detect expired license message
+      if (json.data?.[0]?.ad_name?.includes('License expired')) {
+        return { data: [], error: 'Windsor license expired. Renew at windsor.ai/pricing' }
+      }
+
+      const rows: WindsorRawRow[] = json.data ?? []
+      // Tag rows with account_id if not already present
+      if (accountId) {
+        for (const row of rows) {
+          if (!row.account_id) (row as Record<string, unknown>).account_id = accountId
+        }
+      }
+      allRows.push(...rows)
     }
 
-    const json = await res.json()
-
-    // Detect expired license message
-    if (json.data?.[0]?.ad_name?.includes('License expired')) {
-      return { data: [], error: 'Windsor license expired. Renew at windsor.ai/pricing' }
-    }
-
-    return { data: json.data ?? [] }
+    return { data: allRows }
   } catch (err) {
     return { data: [], error: String(err) }
   }
