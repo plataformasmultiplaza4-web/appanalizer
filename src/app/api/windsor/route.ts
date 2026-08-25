@@ -5,11 +5,62 @@ import {
   transformWindsorData,
 } from '@/lib/windsor'
 import { MOCK_TRANSFORMED_DATA } from '@/lib/mock-data'
+import {
+  TIKTOK_AD_ACCOUNTS,
+  META_AD_ACCOUNTS,
+} from '@/lib/constants'
+import type { WindsorAccountData } from '@/types/windsor'
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { dateFrom, dateTo, demo, platforms } = body
+    const { dateFrom, dateTo, demo, platforms, bypassDns, rawTiktok, rawMeta } = body
+
+    // Bypass mode: browser fetched raw Windsor data directly, we just transform it
+    if (bypassDns && (rawTiktok || rawMeta)) {
+      const accountsData: WindsorAccountData[] = []
+
+      if (rawTiktok && Array.isArray(rawTiktok)) {
+        const tiktokAccounts = Object.values(TIKTOK_AD_ACCOUNTS)
+        const byAccount: Record<string, unknown[]> = {}
+        for (const row of rawTiktok) {
+          const accId = String((row as Record<string, unknown>).account_id ?? '')
+          if (!byAccount[accId]) byAccount[accId] = []
+          byAccount[accId].push(row)
+        }
+        for (const account of tiktokAccounts) {
+          accountsData.push({
+            accountId: account.id,
+            accountName: account.name,
+            platform: 'tiktok',
+            data: (byAccount[account.id] ?? []) as never,
+            error: null,
+          })
+        }
+      }
+
+      if (rawMeta && Array.isArray(rawMeta)) {
+        const metaAccounts = Object.values(META_AD_ACCOUNTS)
+        const byAccount: Record<string, unknown[]> = {}
+        for (const row of rawMeta) {
+          const accId = String((row as Record<string, unknown>).account_id ?? '')
+          if (!byAccount[accId]) byAccount[accId] = []
+          byAccount[accId].push(row)
+        }
+        for (const account of metaAccounts) {
+          accountsData.push({
+            accountId: account.id,
+            accountName: account.name,
+            platform: 'meta',
+            data: (byAccount[account.id] ?? []) as never,
+            error: null,
+          })
+        }
+      }
+
+      const transformed = transformWindsorData(accountsData)
+      return NextResponse.json({ data: transformed, source: 'windsor' })
+    }
 
     // Accept both WINDSOR_API_KEY and NEXT_PUBLIC_WINDSOR_API_KEY
     const apiKey = process.env.WINDSOR_API_KEY ?? process.env.NEXT_PUBLIC_WINDSOR_API_KEY
@@ -43,7 +94,6 @@ export async function POST(req: NextRequest) {
 
     const allAccountsData = [...tiktokData, ...metaData]
 
-    // Check errors: only fail hard if we got no data at all and have errors
     const errors = allAccountsData.filter((a) => a.error).map((a) => a.error)
     const hasData = allAccountsData.some((a) => a.data.length > 0)
 
