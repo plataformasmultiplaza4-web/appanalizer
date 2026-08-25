@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - claude/fix-dashboard-app-Fi8t7
       - claude/build-ecom-analytics-saas-Ioldt
       - claude/ai-website-cloner-template-dNncV
 
@@ -32,3 +33,4 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_DEMO_MODE: 'false'
+          WINDSOR_API_KEY: ${{ secrets.WINDSOR_API_KEY }}
